@@ -1,0 +1,9 @@
+sudo apt update && sudo apt upgrade -y
+
+reboot
+
+apt list --upgradable
+
+cat /etc/update-manager/release-upgrades
+
+do-release-upgrade -d
