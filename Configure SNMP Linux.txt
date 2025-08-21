@@ -1,0 +1,80 @@
+Passo a passo para instalar e configurar o SNMP em maquinas Linux (Ubuntu e Redhat)
+
+Instale os pacotes necessários (O servidor deve estar com liberação para internet)
+---Ubuntu
+apt-get install snmp snmpd snmp-mibs-downloader -y
+
+---Redhat
+yum install snmp snmpd snmp-mibs-downloader -y
+
+Acesse a pasta do SNMP
+cd /etc/snmp
+
+Edite o arquivo snmp.conf
+vim snmp.conf
+Comente a linha mibs
+#mibs :
+
+Faça uma cópia de segurança do arquivo de configuração
+cp /etc/snmp/snmpd.conf /etc/snmp/snmpd.conf.bkp
+
+Edite o arquivo snmpd.conf
+vim snmpd.conf
+
+Comente a linha
+#agentaddress  127.0.0.1,[::1]
+
+Insira a linha abaixo
+agentAddress udp:161
+
+
+Insira as duas linhas abaixo
+view   all         included   .1
+view   mib2        included   .1.3.6.1.2.1
+
+Comente as duas linhas abaixo:
+#rocommunity  public default -V systemonly
+#rocommunity6 public default -V systemonly
+
+Insira as duas linhas abaixo:
+rocommunity  nomedacommunity 127.0.0.1 -V mib2
+rocommunity  nomedacommunity 10.1.0.35 -V mib2
+
+
+*Se for DMZ, colocar o GW do host também
+rocommunity nomedacommunity 172.16.0.9 -V mib2
+
+Salve o arquivo snmpd.conf
+
+Execute o comando abaixo para permitir o trafego do seu server
+
+#Ubuntu
+ufw allow from 10.1.0.35 to any port 161
+
+#Redhat
+firewall-cmd --permanent --add-port=161/udp
+firewall-cmd --reload
+
+
+Execute os comandos abaixo para habilitar, reiniciar e verificar o serviço
+systemctl enable snmpd.service ; systemctl restart snmpd.service ; systemctl status snmpd.service
+
+Execute o comando abaixo para efetuar o teste de SNMP
+snmpwalk -v 2c -c nomedacommunity localhost
+
+
+Checar a data do servidor
+timedatectl
+
+Se estiver errada:
+
+timedatectl set-timezone America/Sao_Paulo
+
+apt install -y ntpdate
+
+ntpdate -u a.st1.ntp.br
+
+
+
+
+
