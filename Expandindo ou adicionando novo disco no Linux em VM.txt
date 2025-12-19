@@ -1,0 +1,113 @@
+---METODO AUMENTANDO O DISCO NA VM (Não precisa desligar ou reiniciar a VM com este método)
+
+1º Acesse a VM pelo vCenter ou ESXi e aumente o tamanho do disco.
+  Obs: A VM nao pode ter snapshots ativos
+  Primeiro aumente o tamanho do disco e depois faça o snapshot
+
+2º No Linux, siga esses passos:
+
+fdisk -l (pegar o caminho do disco)
+
+pvresize /dev/nvme0n1p2
+
+parted
+	p
+	resizepart 2 (2 é o número da partição que quer aumentar)
+	Terminar?  [805GB]? 859GB
+	q
+
+pvresize /dev/nvme0n1p2
+
+vgs (verificar o quanto de VFree apareceu)
+
+df -h (pegar o caminho da partição LVM)
+
+lvresize -r /dev/mapper/rl_opmonpro04-root -L+50G (+50G é o tamanho que apareceu no VFree)
+
+vgs (verifique se aumentou o VSize
+
+df -h (verifique se aumentou o tamanho da partição desejada)
+
+
+----------------------------------------------------------------
+
+---METODO ADICIONANDO UM NOVO DISCO NO VMWARE (Não precisa desligar ou reiniciar a VM com este método)
+1º Cria Novo disco na VM pelo vCenter ou ESXi
+  Obs: Permite executar com a VM tendo snapshot
+  Sempre realize um snapshot antes de iniciar o procedimento
+
+2º No linux
+fdisk -l (pegar o nome do disco novo criado)
+
+pvcreate /dev/sde (cria um device logico de acordo com o nome no fdisk-l)
+
+vgdisplay (mostra o nome do grupo lvm a ser extendido)
+
+vgextend mysql /dev/sde (extende o grupo de volumes logicos de acordo com o nome mostrado no vgdisplay)
+
+pvscan
+
+lvdisplay
+
+lvextend /dev/mysql/lvol0 /dev/sde (adiciona o disco ao volume logico)
+
+df -Th
+
+resize2fs /dev/mapper/mysql-lvol0 (extende o filesystem)
+
+df -Th
+
+
+----------------------------------------------------------------
+
+---Metodo novo disco com uma nova partição
+1º Criar Novo disco na VM pelo vCenter ou ESXi
+
+2º No linux, seguir os passos abaixo:
+lsblk (pegar o nome do disco)
+ 
+
+gdisk /dev/sdc
+n
+enter
+enter
+enter
+enter
+w
+y
+ 
+lsblk (pegar o nome da partição)
+ 
+pvcreate /dev/sdc1
+ 
+ 
+vgcreate vgpodman /dev/sdc1
+ 
+vgs
+ 
+lvcreate -n lvpodman -l 100%FREE vgpodman
+ 
+mkfs.xfs /dev/vgpodman/lvpodman
+ 
+lsblk -f
+ 
+mount /dev/vgpodman/lvpodman /var/lib/containers
+ 
+df -h
+ 
+mkdir /dados
+
+Adicionar no fstab para montar quando fizer reboot
+ 
+vim /etc/fstab
+ 
+ 
+/dev/vgdocker/lvdocker /var/lib/docker xfs defaults 0 0
+ 
+
+systemctl daemon-reload
+
+mount -a
+
+
+
