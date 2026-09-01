@@ -1,0 +1,14 @@
+RedHat
+
+Remove Cockpit
+dnf remove cockpit\* --noautoremove
+
+
+Remove Interface Grafica
+systemctl set-default multi-user.target
+systemctl disable --now gdm || true
+dnf remove -y gdm gnome-shell gnome-session gnome-classic-session gnome-control-center gnome-terminal mutter xorg-x11-server-Xorg xorg-x11-server-common
+rpm -qa | egrep -i "gdm|gnome-shell|gnome-session|gnome-control-center|gnome-terminal|mutter|xorg-x11-server" || echo "GUI removida"
+systemctl --failed
+
+
