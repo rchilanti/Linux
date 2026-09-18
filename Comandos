@@ -1,14 +1,20 @@
-RedHat
 
-Remove Cockpit
-dnf remove cockpit\* --noautoremove
+---Criar usuário e adicionar no sshd_config
+useradd -m -s /bin/bash usuario && printf '%s\n' 'usuario:senha' | chpasswd && cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config.bkp && sed -i 's/^AllowUsers .*/& bmc_helix_procergs/' /etc/ssh/sshd_config && grep '^AllowUsers' /etc/ssh/sshd_config && sshd -t && systemctl reload sshd
 
 
-Remove Interface Grafica
-systemctl set-default multi-user.target
-systemctl disable --now gdm || true
+
+---Verificar versão do NGINX instalado e para qual versão vai atualizar
+rpm -q nginx && dnf update nginx --assumemo
+
+
+---Atualizar NGINX e atualiza info no Satellite
+dnf update nginx -y && nginx -t && systemctl reload nginx && systemctl status nginx --no-pager && subscription-manager refresh && subscription-manager facts --update
+
+
+---Remove Cockpit e atualiza info no Satellite
+dnf remove -y cockpit\* --noautoremove && subscription-manager refresh && subscription-manager facts --update
+
+
+---Remove interface gráfica
 dnf remove -y gdm gnome-shell gnome-session gnome-classic-session gnome-control-center gnome-terminal mutter xorg-x11-server-Xorg xorg-x11-server-common
-rpm -qa | egrep -i "gdm|gnome-shell|gnome-session|gnome-control-center|gnome-terminal|mutter|xorg-x11-server" || echo "GUI removida"
-systemctl --failed
-
-
