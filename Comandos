@@ -3,7 +3,6 @@
 useradd -m -s /bin/bash usuario && printf '%s\n' 'usuario:senha' | chpasswd && cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config.bkp && sed -i 's/^AllowUsers .*/& usuario/' /etc/ssh/sshd_config && grep '^AllowUsers' /etc/ssh/sshd_config && sshd -t && systemctl reload sshd
 
 
-
 ---Verificar versão do NGINX instalado e para qual versão vai atualizar
 rpm -q nginx && dnf update nginx --assumemo
 
