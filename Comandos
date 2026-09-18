@@ -1,6 +1,6 @@
 
 ---Criar usuário e adicionar no sshd_config
-useradd -m -s /bin/bash usuario && printf '%s\n' 'usuario:senha' | chpasswd && cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config.bkp && sed -i 's/^AllowUsers .*/& bmc_helix_procergs/' /etc/ssh/sshd_config && grep '^AllowUsers' /etc/ssh/sshd_config && sshd -t && systemctl reload sshd
+useradd -m -s /bin/bash usuario && printf '%s\n' 'usuario:senha' | chpasswd && cp -p /etc/ssh/sshd_config /etc/ssh/sshd_config.bkp && sed -i 's/^AllowUsers .*/& usuario/' /etc/ssh/sshd_config && grep '^AllowUsers' /etc/ssh/sshd_config && sshd -t && systemctl reload sshd
 
 
 
